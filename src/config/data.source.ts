@@ -16,7 +16,6 @@ export const DataSourceConfig: DataSourceOptions = {
   migrations: [__dirname + '/../migrations/*{.ts,.js}'],
   synchronize: true,
   namingStrategy: new SnakeNamingStrategy(),
-  ssl: configService.get('APP_PROD') === "true",
   extra: {
     ssl: configService.get('APP_PROD') === 'true' ? { rejectUnauthorized: false } : null
   }
