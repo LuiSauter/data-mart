@@ -18,11 +18,11 @@ export class FacultyController {
         };
     }
 
-    // @Get()
-    // public async findAll(): Promise<ResponseGet> {
-    //     const { data, countData } = await this.facultyService.findAll();
-    //     return { data, countData };
-    // }
+    @Get()
+    public async findAll(): Promise<ResponseGet> {
+        const { data, countData } = await this.facultyService.findAll();
+        return { data, countData };
+    }
 
     @Get(':id')
     public async findOne(@Param('id') id: string): Promise<ResponseMessage> {
@@ -47,16 +47,5 @@ export class FacultyController {
     public async remove(@Param('id') id: string): Promise<ResponseMessage> {
         await this.facultyService.remove(id);
         return { statusCode: 200, message: 'Faculty deleted' };
-    }
-
-    @ApiQuery({ name: 'localidadName', required: false, description: 'Filter by locality Name', type: 'string' })
-    @ApiQuery({ name: 'modeName', required: false, description: 'Filter by mode Name', type: 'string' })
-    @ApiQuery({ name: 'semesterPeriod', required: false, description: 'Filter by semester Name', type: 'string' })
-    @ApiQuery({ name: 'semesterYear', required: false, description: 'Filter by semester Year', type: 'string' })
-    @ApiQuery({ name: 'indicatorAttributes', required: true, description: 'Indicator attribute to sum', isArray: true, type: 'string' })
-    @Get()    
-    public async getFacultiesWithIndicatorSum(@Query() filterDto: FilterIndicatorFacultyDto): Promise<any> {
-        Logger.log(filterDto);
-        return this.facultyService.getFacultyWithIndicatorSum(filterDto);
-    }
+    }    
 }

@@ -26,7 +26,7 @@ import { FilterController } from './controller/filter-indicator.controller';
     imports: [TypeOrmModule.forFeature([
         ModeEntity, SemesterEntity,CareerEntity, IndicatorEntity, FacultyEntity, LocalityEntity
     ])],
-    controllers: [ExcelController, FilterController],
+    controllers: [ExcelController, FilterController, FacultyController, ModeController, SemesterController, LocalityController, CareerController, IndicatorController],
     providers: [ModeService, FacultyService, SemesterService, LocalityService, CareerService, IndicatorService, ExcelService],
     exports: [ModeService, FacultyService, SemesterService, LocalityService, CareerService, IndicatorService, ExcelService],
 })
