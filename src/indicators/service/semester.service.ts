@@ -5,6 +5,7 @@ import { SemesterEntity } from '../entities/semester.entity';
 import { CreateSemesterDto } from '../dto/create-semester.dto';
 import { ResponseGet, ResponseMessage } from 'src/common/interfaces';
 import { handlerError } from 'src/common/utils/handler-error.utils';
+import { FilterIndicatorSemesterDto } from '../dto/filter-indicator-semester.dto';
 
 @Injectable()
 export class SemesterService {
@@ -81,6 +82,62 @@ export class SemesterService {
         } catch (error) {
             handlerError(error, this.logger);
             throw new Error('Failed to delete semester');
+        }
+    }
+
+    public async getSemesterWithIndicatorSum(filterDto: FilterIndicatorSemesterDto): Promise<any> {
+        const { localidadName, facultyName, careerName, modeName, indicatorAttributes } = filterDto;
+
+        const query = this.semesterRepository
+            .createQueryBuilder('semester')
+            .leftJoin('semester.indicators', 'indicator') // Join con indicadores
+            .leftJoin('indicator.locality', 'locality')   // Join con localidad
+            .leftJoin('indicator.career', 'career')       // Join con carrera
+            .leftJoin('career.faculty', 'faculty')        // Join con facultad
+            .leftJoin('indicator.mode', 'mode')           // Join con modalidad
+            .select('semester.period', 'semesterPeriod')
+            .addSelect('semester.year', 'semesterYear');
+
+        // Seleccionar dinámicamente los indicadores
+        if (indicatorAttributes) {
+            const attributesArray = Array.isArray(indicatorAttributes) ? indicatorAttributes : [indicatorAttributes];
+
+            attributesArray.forEach((attribute) => {
+                if (attribute.endsWith('percent') || attribute.startsWith('pp')) {
+                    query.addSelect(`ROUND(AVG(indicator.${attribute}), 2)`, `avg_${attribute}`);
+                } else {
+                    query.addSelect(`SUM(indicator.${attribute})`, `sum_${attribute}`);
+                }
+            });
+        }
+
+        query.groupBy('semester.period, semester.year');
+
+        // Filtrar por localidad
+        if (localidadName) {
+            query.andWhere('locality.name = :localidadName', { localidadName });
+        }
+
+        // Filtrar por facultad
+        if (facultyName) {
+            query.andWhere('faculty.name = :facultyName', { facultyName });
+        }
+
+        // Filtrar por carrera
+        if (careerName) {
+            query.andWhere('career.name = :careerName', { careerName });
+        }
+
+        // Filtrar por modalidad
+        if (modeName) {
+            query.andWhere('mode.name = :modeName', { modeName });
+        }
+
+        try {
+            return await query.getRawMany();
+        } catch (error) {
+            this.logger.error('Failed to get semesters with indicator sum', error.stack);
+            throw new Error('Failed to get semesters with indicator sum');
         }
     }
 }

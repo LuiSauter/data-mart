@@ -5,6 +5,7 @@ import { ModeEntity } from '../entities/mode.entity';
 import { CreateModeDto } from '../dto/create-mode.dto';
 import { ResponseGet, ResponseMessage } from 'src/common/interfaces';
 import { handlerError } from 'src/common/utils/handler-error.utils'; 
+import { FilterIndicatorModeDto } from '../dto/filter-indicator-mode.dto';
 
 @Injectable()
 export class ModeService {
@@ -79,4 +80,52 @@ export class ModeService {
             throw new Error('Failed to delete mode');
         }
     }
+
+    public async getModeWithIndicatorSum(filterDto: FilterIndicatorModeDto): Promise<any> {
+        const { localidadName, facultyName, semesterPeriod, semesterYear, indicatorAttributes } = filterDto;
+
+        const query = this.modeRepository
+            .createQueryBuilder('mode')
+            .leftJoin('mode.indicators', 'indicator')   
+            .leftJoin('indicator.locality', 'locality') 
+            .leftJoin('indicator.career', 'career')     
+            .leftJoin('career.faculty', 'faculty')      
+            .leftJoin('indicator.semester', 'semester') 
+            .select('mode.name', 'modeName');
+
+        if (indicatorAttributes) {
+            const attributesArray = Array.isArray(indicatorAttributes) ? indicatorAttributes : [indicatorAttributes];
+
+            attributesArray.forEach((attribute) => {
+                if (attribute.endsWith('percent') || attribute.startsWith('pp')) {
+                    query.addSelect(`ROUND(AVG(indicator.${attribute}), 2)`, `avg_${attribute}`);
+                } else {
+                    query.addSelect(`SUM(indicator.${attribute})`, `sum_${attribute}`);
+                }
+            });
+        }
+
+        query.groupBy('mode.name');
+        
+        if (localidadName) {
+            query.andWhere('locality.name = :localidadName', { localidadName });
+        }
+        
+        if (facultyName) {
+            query.andWhere('faculty.name = :facultyName', { facultyName });
+        }
+        
+        if (semesterPeriod && semesterYear) {
+            query.andWhere('semester.period = :semesterPeriod', { semesterPeriod });
+            query.andWhere('semester.year = :semesterYear', { semesterYear });
+        }
+
+        try {
+            return await query.getRawMany();
+        } catch (error) {
+            this.logger.error('Failed to get modes with indicator sum', error.stack);
+            throw new Error('Failed to get modes with indicator sum');
+        }
+    }
+
 }

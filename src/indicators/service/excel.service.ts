@@ -89,7 +89,7 @@ export class ExcelService {
             if (!carreraFound) {
                 const createCareerDto: CreateCareerDto = {
                     name: carrera,
-                    code: carrera,
+                    // code: carrera.split(' ')[0],
                     facultyId: facultyFound.id,
                 };
                 carreraFound = await this.careerService.create(createCareerDto);
