@@ -88,8 +88,9 @@ export class FacultyService {
             .createQueryBuilder('faculty')
             .leftJoin('faculty.careers', 'career')
             .leftJoin('career.indicators', 'indicator')
-            .leftJoin('indicator.semester', 'semester')
-
+            .leftJoin('indicator.semester', 'semester')            
+            .leftJoin('indicator.locality', 'locality')
+            .leftJoin('indicator.mode', 'mode')
             .select('faculty.name', 'facultyName');
         if (indicatorAttributes) {
             // Si indicatorAttributes es un string, convertirlo en array
@@ -107,10 +108,10 @@ export class FacultyService {
         query.groupBy('faculty.name');
 
         if (localidadName) {
-            query.andWhere('indicator.locality.name = :localidadName', { localidadName });
+            query.andWhere('locality.name = :localidadName', { localidadName });
         }
         if (modeName) {
-            query.andWhere('indicator.mode.name = :modeName', { modeName });
+            query.andWhere('mode.name = :modeName', { modeName });
         }
         if (semesterPeriod && semesterYear) {
             query.andWhere('semester.period = :semesterPeriod', { semesterPeriod });
