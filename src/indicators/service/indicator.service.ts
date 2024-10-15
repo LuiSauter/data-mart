@@ -9,7 +9,6 @@ import { ModeService } from '../service/mode.service';
 import { SemesterService } from '../service/semester.service';
 import { ResponseGet, ResponseMessage } from 'src/common/interfaces';
 import { handlerError } from 'src/common/utils/handler-error.utils';
-import { FilterIndicatorDto } from '../dto/filter-indicator.dto';
 
 @Injectable()
 export class IndicatorService {

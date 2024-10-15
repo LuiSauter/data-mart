@@ -2,7 +2,7 @@ import { Type } from "class-transformer";
 import { IsEmpty, IsOptional } from "class-validator";
 import { TYPE } from "src/common/constants/type";
 
-export class FilterIndicatorDto {
+export class FilterIndicatorFacultyDto {
     @IsOptional()
     @Type(() => String)
     localidadName?: string;  
@@ -20,5 +20,5 @@ export class FilterIndicatorDto {
     semesterYear?: string;   
 
     @Type(() => String)
-    indicatorAttribute: string;
+    indicatorAttributes: string[];
 }

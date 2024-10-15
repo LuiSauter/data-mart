@@ -5,7 +5,7 @@ import { FacultyEntity } from '../entities/faculty.entity';
 import { CreateFacultyDto } from '../dto/create-faculty.dto';
 import { ResponseGet, ResponseMessage } from 'src/common/interfaces';
 import { handlerError } from 'src/common/utils/handler-error.utils';
-import { FilterIndicatorDto } from '../dto/filter-indicator.dto';
+import { FilterIndicatorFacultyDto } from '../dto/filter-indicator-faculty.dto';
 
 @Injectable()
 export class FacultyService {
@@ -81,16 +81,30 @@ export class FacultyService {
         }
     }
 
-    public async getFacultyWithIndicatorSum(filterDto: FilterIndicatorDto): Promise<any> {
-        const { localidadName, modeName, semesterPeriod, semesterYear, indicatorAttribute } = filterDto;
+    public async getFacultyWithIndicatorSum(filterDto: FilterIndicatorFacultyDto): Promise<any> {
+        const { localidadName, modeName, semesterPeriod, semesterYear, indicatorAttributes } = filterDto;
 
         const query = this.facultyRepository
             .createQueryBuilder('faculty')
             .leftJoin('faculty.careers', 'career')
             .leftJoin('career.indicators', 'indicator')
-            .select('faculty.name', 'facultyName')
-            .addSelect(`SUM(indicator.${indicatorAttribute})`, 'sumAttribute')
-            .groupBy('faculty.name');
+            .leftJoin('indicator.semester', 'semester')
+
+            .select('faculty.name', 'facultyName');
+        if (indicatorAttributes) {
+            // Si indicatorAttributes es un string, convertirlo en array
+            const attributesArray = Array.isArray(indicatorAttributes) ? indicatorAttributes : [indicatorAttributes];
+
+            attributesArray.forEach((attribute) => {
+                if (attribute.endsWith('percent') || attribute.startsWith('pp')) {
+                    query.addSelect(`ROUND(AVG(indicator.${attribute}), 2)`, `avg_${attribute}`);
+                } else {
+                    query.addSelect(`SUM(indicator.${attribute})`, `sum_${attribute}`);
+                }
+            });
+        }
+
+        query.groupBy('faculty.name');
 
         if (localidadName) {
             query.andWhere('indicator.locality.name = :localidadName', { localidadName });
@@ -99,8 +113,8 @@ export class FacultyService {
             query.andWhere('indicator.mode.name = :modeName', { modeName });
         }
         if (semesterPeriod && semesterYear) {
-            query.andWhere('indicator.semester.period = :semesterPeriod', { semesterPeriod });
-            query.andWhere('indicator.semester.year = :semesterYear', { semesterYear });
+            query.andWhere('semester.period = :semesterPeriod', { semesterPeriod });
+            query.andWhere('semester.year = :semesterYear', { semesterYear });
         }
 
         try {

@@ -20,12 +20,13 @@ import { CareerService } from './service/career.service';
 import { IndicatorService } from './service/indicator.service';
 import { ExcelController } from './controller/excel.controller';
 import { ExcelService } from './service/excel.service';
+import { FilterController } from './controller/filter-indicator.controller';
 
 @Module({
     imports: [TypeOrmModule.forFeature([
         ModeEntity, SemesterEntity,CareerEntity, IndicatorEntity, FacultyEntity, LocalityEntity
     ])],
-    controllers: [ModeController, FacultyController, SemesterController, LocalityController, CareerController, IndicatorController, ExcelController],
+    controllers: [ExcelController, FilterController],
     providers: [ModeService, FacultyService, SemesterService, LocalityService, CareerService, IndicatorService, ExcelService],
     exports: [ModeService, FacultyService, SemesterService, LocalityService, CareerService, IndicatorService, ExcelService],
 })

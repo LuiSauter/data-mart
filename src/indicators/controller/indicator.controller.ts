@@ -3,7 +3,6 @@ import { IndicatorService } from '../service/indicator.service';
 import { CreateIndicatorDto } from '../dto/create-indicator.dto';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ResponseGet, ResponseMessage } from 'src/common/interfaces';
-import { FilterIndicatorDto } from '../dto/filter-indicator.dto';
 
 @ApiTags('Indicators')
 @Controller('indicators')

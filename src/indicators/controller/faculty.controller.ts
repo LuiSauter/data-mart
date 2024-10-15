@@ -3,7 +3,7 @@ import { FacultyService } from '../service/faculty.service';
 import { CreateFacultyDto } from '../dto/create-faculty.dto';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { ResponseMessage, ResponseGet } from 'src/common/interfaces';
-import { FilterIndicatorDto } from '../dto/filter-indicator.dto';
+import { FilterIndicatorFacultyDto } from '../dto/filter-indicator-faculty.dto';
 
 @ApiTags('Faculties')
 @Controller('faculties')
@@ -53,9 +53,9 @@ export class FacultyController {
     @ApiQuery({ name: 'modeName', required: false, description: 'Filter by mode Name', type: 'string' })
     @ApiQuery({ name: 'semesterPeriod', required: false, description: 'Filter by semester Name', type: 'string' })
     @ApiQuery({ name: 'semesterYear', required: false, description: 'Filter by semester Year', type: 'string' })
-    @ApiQuery({ name: 'indicatorAttribute', required: true, description: 'Indicator attribute to sum', type: 'string' })
+    @ApiQuery({ name: 'indicatorAttributes', required: true, description: 'Indicator attribute to sum', isArray: true, type: 'string' })
     @Get()    
-    public async getFacultiesWithIndicatorSum(@Query() filterDto: FilterIndicatorDto): Promise<any> {
+    public async getFacultiesWithIndicatorSum(@Query() filterDto: FilterIndicatorFacultyDto): Promise<any> {
         Logger.log(filterDto);
         return this.facultyService.getFacultyWithIndicatorSum(filterDto);
     }
