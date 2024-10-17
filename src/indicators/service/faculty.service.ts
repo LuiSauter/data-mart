@@ -83,6 +83,29 @@ export class FacultyService {
 
     public async getFacultyWithIndicatorSum(filterDto: FilterIndicatorFacultyDto): Promise<any> {
         const { localidadName, modeName, semesterPeriod, semesterYear, indicatorAttributes } = filterDto;
+        
+        const attributeLabels = {
+            sum_t_inscritos: 'Estudiantes inscritos',
+            sum_t_nuevos: 'Estudiantes nuevos inscritos',
+            sum_t_antiguos: 'Estudiantes antiguos',
+            sum_matriculas_inscritas: 'Matriculas inscritas',
+            sum_sin_nota: 'Estudiantes sin nota',
+            sum_aprobados: 'Estudiantes que aprobaron',
+            avg_aprobados_percent: 'Porcentaje de estudiantes que aprobaron',
+            sum_reprobados: 'Estudiantes que reprobaron',
+            avg_reprobados_percent: 'Porcentaje de estudiantes que reprobaron',
+            sum_reprobados_con_0: 'Estudiantes que reprobaron con 0 de nota',
+            avg_reprobados_con_0_percent: 'Porcentaje de estudiantes que reprobaron con 0 de nota',
+            sum_moras: 'Estudiantes en mora',
+            avg_moras_percent: 'Porcentaje de estudiantes en mora',
+            sum_retirados: 'Estudiantes que retiraron',
+            avg_ppa: 'Promedio ponderado acumulado',
+            avg_pps: 'Promedio ponderado semestral',
+            avg_ppa1: 'Promedio ponderado acumulado sin cero de la carrera',
+            avg_ppac: 'Promedio ponderado acumulado de la carrera   ',
+            sum_egresados: 'Cantidad de estudiantes egresados',
+            sum_titulados: 'Cantidad de estudiantes titulados',
+        };
 
         const query = this.facultyRepository
             .createQueryBuilder('faculty')
@@ -92,8 +115,7 @@ export class FacultyService {
             .leftJoin('indicator.locality', 'locality')
             .leftJoin('indicator.mode', 'mode')
             .select('faculty.name', 'facultyName');
-        if (indicatorAttributes) {
-            // Si indicatorAttributes es un string, convertirlo en array
+        if (indicatorAttributes) {            
             const attributesArray = Array.isArray(indicatorAttributes) ? indicatorAttributes : [indicatorAttributes];
 
             attributesArray.forEach((attribute) => {
@@ -119,7 +141,27 @@ export class FacultyService {
         }
 
         try {
-            return await query.getRawMany();
+            const results = await query.getRawMany();
+            
+            return results.map(result => {
+                const values = [];
+                
+                Object.keys(result).forEach(key => {
+                    const attributeLabel = attributeLabels[key] || key;
+
+                    if (key.startsWith('avg_') || key.startsWith('sum_')) {
+                        values.push({
+                            label: attributeLabel,
+                            value: result[key]
+                        });
+                    }
+                });
+
+                return {
+                    label: result.facultyName, 
+                    values: values            
+                };
+            });
         } catch (error) {
             this.logger.error('Failed to get faculties with indicator sum', error.stack);
             throw new Error('Failed to get faculties with indicator sum');
